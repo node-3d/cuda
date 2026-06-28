@@ -1,0 +1,6 @@
+node_modules
+dist
+.rslib
+bin-*
+src/build
+cache*
