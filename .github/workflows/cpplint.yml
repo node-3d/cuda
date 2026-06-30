@@ -1,0 +1,42 @@
+name: Cpplint
+defaults:
+  run:
+    shell: bash
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  cpplint:
+    name: Cpplint
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Fetch Repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.13.0
+          cache: 'npm'
+
+      - name: Install Modules
+        run: npm ci --ignore-scripts
+
+      - name: Install Cpplint
+        run: pip install cpplint
+
+      - name: Run Cpplint
+        run: |
+          node -e "import('@node-3d/addon-tools').then((m) => m.cpcpplint())"
+          cpplint --filter=-readability/braces,-readability/casting,-readability/utf8 --recursive ./src/cpp
+          cpplint --filter=-readability/braces,-readability/casting,-whitespace/comma --recursive ./include
