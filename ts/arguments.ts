@@ -30,21 +30,18 @@ const typeByteSize: Readonly<Record<TKernelValueType, number>> = {
 
 const typeAlignment: Readonly<Record<TKernelValueType, number>> = typeByteSize;
 
-const alignUp = (offset: number, alignment: number): number => (
-	(offset + alignment - 1) & ~(alignment - 1)
-);
+const alignUp = (offset: number, alignment: number): number =>
+	(offset + alignment - 1) & ~(alignment - 1);
 
 const isKernelValueTypeArray = (
 	value: TKernelValueType | readonly TKernelValueType[],
 ): value is readonly TKernelValueType[] => Array.isArray(value);
 
-const isNumberArray = (
-	value: number | readonly number[],
-): value is readonly number[] => Array.isArray(value);
+const isNumberArray = (value: number | readonly number[]): value is readonly number[] =>
+	Array.isArray(value);
 
-const getArgumentTypes = (argument: TKernelArgument): readonly TKernelValueType[] => (
-	isKernelValueTypeArray(argument.type) ? argument.type : [argument.type]
-);
+const getArgumentTypes = (argument: TKernelArgument): readonly TKernelValueType[] =>
+	isKernelValueTypeArray(argument.type) ? argument.type : [argument.type];
 
 const getArgumentValue = (argument: TKernelArgument, index: number): number => {
 	if (isNumberArray(argument.value)) {

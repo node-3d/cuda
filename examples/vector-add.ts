@@ -1,13 +1,6 @@
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import {
-	Ctx,
-	Device,
-	getDeviceCount,
-	launch,
-	memAlloc,
-	moduleRuntimeCompile,
-} from '@node-3d/cuda';
+import { Ctx, Device, getDeviceCount, launch, memAlloc, moduleRuntimeCompile } from '@node-3d/cuda';
 
 if (getDeviceCount() === 0) {
 	throw new Error('No CUDA devices available');
@@ -60,12 +53,17 @@ if (typeof vectorAdd.error === 'number' && vectorAdd.error !== 0) {
 	throw new Error(`Failed to load vectorAdd kernel: ${vectorAdd.error}`);
 }
 
-const launchError = launch(vectorAdd, [1, 1, 1], [count, 1, 1], [
-	{ type: 'DevicePtr', value: bufferA.devicePtr },
-	{ type: 'DevicePtr', value: bufferB.devicePtr },
-	{ type: 'DevicePtr', value: bufferC.devicePtr },
-	{ type: 'Int32', value: count },
-]);
+const launchError = launch(
+	vectorAdd,
+	[1, 1, 1],
+	[count, 1, 1],
+	[
+		{ type: 'DevicePtr', value: bufferA.devicePtr },
+		{ type: 'DevicePtr', value: bufferB.devicePtr },
+		{ type: 'DevicePtr', value: bufferC.devicePtr },
+		{ type: 'Int32', value: count },
+	],
+);
 
 if (launchError !== 0) {
 	throw new Error(`Failed to launch vectorAdd kernel: ${launchError}`);

@@ -23,18 +23,19 @@ describe('CUDA Kernel Arguments', () => {
 		]);
 
 		assert.strictEqual(buffer.length, 16);
-		assert.deepStrictEqual([
-			buffer.readFloatLE(0),
-			buffer.readFloatLE(4),
-			buffer.readFloatLE(8),
-			buffer.readInt32LE(12),
-		], [1, 2, 3, 4]);
+		assert.deepStrictEqual(
+			[
+				buffer.readFloatLE(0),
+				buffer.readFloatLE(4),
+				buffer.readFloatLE(8),
+				buffer.readInt32LE(12),
+			],
+			[1, 2, 3, 4],
+		);
 	});
 
 	it('packs device pointers as 64-bit values', () => {
-		const buffer = prepareArguments([
-			{ type: 'DevicePtr', value: 0x12345678 },
-		]);
+		const buffer = prepareArguments([{ type: 'DevicePtr', value: 0x12345678 }]);
 
 		assert.strictEqual(buffer.length, 8);
 		assert.strictEqual(buffer.readBigUInt64LE(0), 0x12345678n);

@@ -25,7 +25,7 @@ export type TCudaDevice = Readonly<{
 }>;
 
 export type TCudaDeviceConstructor = {
-	new(deviceId: number): TCudaDevice;
+	new (deviceId: number): TCudaDevice;
 	readonly prototype: TCudaDevice;
 };
 
@@ -44,7 +44,7 @@ export type TCudaCtx = Readonly<{
 }>;
 
 export type TCudaCtxConstructor = {
-	new(flags: number, device: TCudaDevice): TCudaCtx;
+	new (flags: number, device: TCudaDevice): TCudaCtx;
 	readonly prototype: TCudaCtx;
 };
 
@@ -74,7 +74,7 @@ export type TCudaMem = Readonly<{
 		devicePtr: number,
 		host: NodeJS.ArrayBufferView,
 		bytes?: number | null,
-		async?: boolean
+		async?: boolean,
 	) => number;
 	copyHtoD_A: (...args: readonly unknown[]) => unknown;
 	copyDtoH_A: (...args: readonly unknown[]) => unknown;

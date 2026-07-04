@@ -1,11 +1,8 @@
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
 
-const isNativeRuntimeError = (error: unknown): boolean => (
-	error instanceof Error
-	&& 'code' in error
-	&& error.code === 'ERR_DLOPEN_FAILED'
-);
+const isNativeRuntimeError = (error: unknown): boolean =>
+	error instanceof Error && 'code' in error && error.code === 'ERR_DLOPEN_FAILED';
 
 describe('CUDA Exported API', () => {
 	it('loads the native API when the CUDA runtime is available', async (t) => {
