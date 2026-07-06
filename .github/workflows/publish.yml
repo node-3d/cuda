@@ -25,6 +25,13 @@ jobs:
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Install Modules
+        run: npm install --ignore-scripts
+
+      - name: Build
+        run: npm run build:ci
+
+
       - name: Get Package Version
         id: package-version
         run: node -p "'version='+require('./package').version" >> $GITHUB_OUTPUT
