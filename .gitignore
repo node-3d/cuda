@@ -5,3 +5,5 @@ bin-*
 src/build
 cache*
 *.tgz
+
+.clang-format
