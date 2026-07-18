@@ -13,6 +13,22 @@ CUDA bindings for Node.js.
 npm install @node-3d/cuda
 ```
 
+## Binary Provenance
+
+Release binary archives for this package are published by public GitHub Actions
+workflows.
+When a release asset includes a GitHub Artifact Attestation, you can verify that
+the downloaded archive was published by the visible workflow in this repository:
+
+```console
+gh release download <tag> -R node-3d/cuda -p <platform>.gz
+gh attestation verify <platform>.gz -R node-3d/cuda
+```
+
+The attestation links the archive to the repository, workflow, commit, and
+release build identity. It does not replace review of the source code, workflow,
+or third-party library contents.
+
 This package exposes the CUDA driver API pieces used by Node3D examples:
 
 * `Device`, `Ctx`, `Modulex`, `Function`, and `Mem` native wrappers.
