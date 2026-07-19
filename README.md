@@ -13,18 +13,7 @@ CUDA bindings for Node.js.
 npm install @node-3d/cuda
 ```
 
-## Binary Origin
 
-Release archives are built by this repository's public GitHub Actions workflows.
-
-Attestations: https://github.com/node-3d/cuda/attestations
-
-To verify a downloaded archive:
-
-```bash
-gh release download <tag> -R node-3d/cuda -p <platform>.gz
-gh attestation verify <platform>.gz -R node-3d/cuda
-```
 
 This package exposes the CUDA driver API pieces used by Node3D examples:
 
@@ -50,3 +39,16 @@ context.destroy();
 See `examples/basic.ts`, `examples/memory-copy.ts`, and `examples/vector-add.ts`
 for complete runnable examples. CUDA toolkit/runtime availability is still required
 on the host system.
+
+## Binary Origin
+
+Release archives are built by this repository's public GitHub Actions workflows.
+
+Attestations: https://github.com/node-3d/cuda/attestations
+
+To verify a downloaded archive:
+
+```bash
+gh release download <tag> -R node-3d/cuda -p <platform>.gz
+gh attestation verify <platform>.gz -R node-3d/cuda
+```

@@ -3,4 +3,4 @@ import { install } from '@node-3d/addon-tools';
 const prefix = 'https://github.com/node-3d/cuda/releases/download';
 const tag = '2.0.0';
 
-install(`${prefix}/v${tag}`);
+await install(`${prefix}/v${tag}`);
