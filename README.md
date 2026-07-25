@@ -2,7 +2,7 @@
 
 This is a part of [Node3D](https://github.com/node-3d) project.
 
-[![NPM](https://badge.fury.io/js/@node-3d%2Fcuda.svg)](https://badge.fury.io/js/@node-3d/cuda)
+[![NPM](https://badge.fury.io/js/@node-3d%2Fcuda.svg)](https://badge.fury.io/js/@node-3d%2Fcuda)
 [![Lint](https://github.com/node-3d/cuda/actions/workflows/lint.yml/badge.svg)](https://github.com/node-3d/cuda/actions/workflows/lint.yml)
 [![Test](https://github.com/node-3d/cuda/actions/workflows/test.yml/badge.svg)](https://github.com/node-3d/cuda/actions/workflows/test.yml)
 [![Cpplint](https://github.com/node-3d/cuda/actions/workflows/cpplint.yml/badge.svg)](https://github.com/node-3d/cuda/actions/workflows/cpplint.yml)
