@@ -17,6 +17,11 @@ npm install @node-3d/cuda
 
 This package exposes the CUDA driver API pieces used by Node3D examples:
 
+Prebuilt addon binaries: Windows x64/ARM64, Linux x64/ARM64. Standard Windows
+x64 and Linux builds target CUDA 12.9. Windows ARM64 builds target CUDA 13.4
+because NVIDIA introduced Windows ARM64 target support there. CUDA toolkit/runtime
+and an NVIDIA driver are still required on the host system.
+
 * `Device`, `Ctx`, `Modulex`, `Function`, and `Mem` native wrappers.
 * Memory helpers such as `memAlloc`, `memAllocPitch`, and `memVBO`.
 * Module loading and runtime compilation helpers.

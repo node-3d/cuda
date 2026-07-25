@@ -3,11 +3,16 @@
 		'bin'        : '<!(node -e "import(\'@node-3d/addon-tools\').then((m) => m.printBin())")',
 		'gl_include' : '<!(node -p "require(\'@node-3d/deps-opengl\').include")',
 		'gl_bin'     : '<!(node -p "require(\'@node-3d/deps-opengl\').bin")',
+		'cuda_path'  : '<!(node -e "const { dirname, resolve } = require(\'node:path\'); const { execFileSync } = require(\'node:child_process\'); const nvcc = process.platform === \'win32\' ? \'where\' : \'which\'; const envPath = process.env.CUDA_PATH || process.env.CUDA_HOME; const nvccPath = envPath ? null : execFileSync(nvcc, [\'nvcc\'], { encoding: \'utf8\' }).split(/\\r?\\n/)[0]; console.log((envPath || resolve(dirname(nvccPath), \'..\')).replace(/\\\\/g, \'/\'));")',
 	},
 	'conditions': [[
 		'OS=="win"',
 		{'variables': {'obj': 'obj'}},
 		{'variables': {'obj': 'o'}},
+	], [
+		'OS=="win" and target_arch=="arm64"',
+		{'variables': {'cuda_lib_arch': 'arm64'}},
+		{'variables': {'cuda_lib_arch': 'x64'}},
 	]],
 	"targets": [
 		{
@@ -48,13 +53,19 @@
 			'conditions': [
 				[ 'OS=="mac"', {
 					'libraries': ['-framework CUDA'],
-					'include_dirs': ['/usr/local/include', '/usr/local/cuda/include'],
+					'include_dirs': ['/usr/local/include', '<(cuda_path)/include', '/usr/local/cuda/include'],
 					'library_dirs': ['/usr/local/lib']
 				}],
 				[ 'OS=="linux"', {
 					'libraries': ['-lcuda', '-lcudart', '-lnvrtc'],
-					'include_dirs': ['/usr/local/include', '/usr/local/cuda/include'],
-					'library_dirs': ['/usr/local/lib']
+					'include_dirs': ['/usr/local/include', '<(cuda_path)/include', '/usr/local/cuda/include'],
+					'library_dirs': [
+						'/usr/local/lib',
+						'<(cuda_path)/lib64',
+						'<(cuda_path)/lib64/stubs',
+						'/usr/local/cuda/lib64',
+						'/usr/local/cuda/lib64/stubs'
+					]
 				}],
 				[ 'OS=="win"', {
 					'defines' : [
@@ -63,14 +74,14 @@
 						'_WIN32',
 					],
 					'libraries': [
-						'-l$(CUDA_PATH)/lib/x64/nvrtc.lib',
-						'-l$(CUDA_PATH)/lib/x64/cuda.lib',
-						'-l$(CUDA_PATH)/lib/x64/cudart.lib',
+						'-l<(cuda_path)/lib/<(cuda_lib_arch)/nvrtc.lib',
+						'-l<(cuda_path)/lib/<(cuda_lib_arch)/cuda.lib',
+						'-l<(cuda_path)/lib/<(cuda_lib_arch)/cudart.lib',
 						'glew32.lib',
 						'opengl32.lib',
 					],
 					"include_dirs": [
-						"$(CUDA_PATH)/include",
+						"<(cuda_path)/include",
 					],
 				}]
 			]
