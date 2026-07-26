@@ -21,6 +21,38 @@ $cudaPath = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v$Version"
 $installer = "cuda-$Version-$arch.exe"
 $logDir = Join-Path (Resolve-Path ".") "cuda-install-$Version-$arch"
 
+function Get-CudaComponents {
+	param(
+		[Parameter(Mandatory = $true)]
+		[string] $CudaVersion
+	)
+
+	if ($CudaVersion -eq "12.9") {
+		return @(
+			"cudart_12.9",
+			"nvcc_12.9",
+			"nvrtc_12.9",
+			"nvrtc_dev_12.9",
+			"nvvm_12.9",
+			"thrust_12.9"
+		)
+	}
+
+	if ($CudaVersion -eq "13.4") {
+		return @(
+			"crt_13.4",
+			"cudart_13.4",
+			"nvcc_13.4",
+			"nvrtc_13.4",
+			"nvrtc_dev_13.4",
+			"nvvm_13.4",
+			"thrust_13.4"
+		)
+	}
+
+	throw "Unsupported CUDA component version: $CudaVersion"
+}
+
 function Show-InstallerLogs {
 	param(
 		[Parameter(Mandatory = $true)]
@@ -64,20 +96,10 @@ New-Item -ItemType Directory -Path $logDir | Out-Null
 
 Write-Host "Installing CUDA $Version"
 $argumentList = @("-s", "-loglevel:6", "-log:$logDir")
+$components = Get-CudaComponents -CudaVersion $Version
 
-if ($Version -eq "13.4" -and $arch -eq "arm64") {
-	$components = @(
-		"crt_13.4",
-		"cudart_13.4",
-		"nvcc_13.4",
-		"nvrtc_13.4",
-		"nvrtc_dev_13.4",
-		"nvvm_13.4",
-		"thrust_13.4"
-	)
-	Write-Host "Using selective CUDA Toolkit packages: $($components -join ', ')"
-	$argumentList += $components
-}
+Write-Host "Using selective CUDA Toolkit packages: $($components -join ', ')"
+$argumentList += $components
 
 Write-Host "Installer arguments: $($argumentList -join ' ')"
 $process = Start-Process -FilePath (Resolve-Path $installer) -ArgumentList $argumentList -PassThru
