@@ -19,12 +19,34 @@ if ($Version -eq "12.9") {
 
 $cudaPath = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v$Version"
 $installer = "cuda-$Version-$arch.exe"
+$logPath = Resolve-Path "."
+$logFile = Join-Path $logPath "cuda-install-$Version-$arch.log"
 
 Write-Host "Downloading CUDA $Version from $url"
 Invoke-WebRequest -Uri $url -OutFile $installer
+$installerInfo = Get-Item $installer
+Write-Host "Downloaded $($installerInfo.FullName) ($($installerInfo.Length) bytes)"
 
 Write-Host "Installing CUDA $Version"
-$process = Start-Process -FilePath (Resolve-Path $installer) -ArgumentList "-s" -Wait -PassThru
+$argumentList = @("-s", "-loglevel:6", "-log:$logFile")
+Write-Host "Installer arguments: $($argumentList -join ' ')"
+$process = Start-Process -FilePath (Resolve-Path $installer) -ArgumentList $argumentList -PassThru
+$timeout = [TimeSpan]::FromMinutes(25)
+
+if (!$process.WaitForExit([int] $timeout.TotalMilliseconds)) {
+	Write-Host "CUDA installer timed out after $($timeout.TotalMinutes) minutes."
+	if (Test-Path $logFile) {
+		Write-Host "Last CUDA installer log lines:"
+		Get-Content $logFile -Tail 200
+	}
+	Stop-Process -Id $process.Id -Force
+	throw "CUDA installer timed out"
+}
+
+if (Test-Path $logFile) {
+	Write-Host "Last CUDA installer log lines:"
+	Get-Content $logFile -Tail 120
+}
 
 if ($process.ExitCode -ne 0) {
 	throw "CUDA installer failed with exit code $($process.ExitCode)"

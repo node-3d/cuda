@@ -57,6 +57,7 @@ jobs:
 
   build:
     name: Build (${{ matrix.target }})
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -103,10 +104,12 @@ jobs:
       - name: Install CUDA Toolkit - Windows
         if: ${{ startsWith(matrix.target, 'windows') }}
         shell: pwsh
+        timeout-minutes: 30
         run: .github/scripts/install-cuda.ps1 -Version '${{ matrix.cuda_version }}'
 
       - name: Install CUDA Toolkit - Linux
         if: ${{ startsWith(matrix.target, 'linux') }}
+        timeout-minutes: 30
         run: bash .github/scripts/install-cuda.sh '${{ matrix.cuda_version }}'
 
       - name: Install Modules
