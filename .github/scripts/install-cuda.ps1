@@ -64,6 +64,21 @@ New-Item -ItemType Directory -Path $logDir | Out-Null
 
 Write-Host "Installing CUDA $Version"
 $argumentList = @("-s", "-loglevel:6", "-log:$logDir")
+
+if ($Version -eq "13.4" -and $arch -eq "arm64") {
+	$components = @(
+		"crt_13.4",
+		"cudart_13.4",
+		"nvcc_13.4",
+		"nvrtc_13.4",
+		"nvrtc_dev_13.4",
+		"nvvm_13.4",
+		"thrust_13.4"
+	)
+	Write-Host "Using selective CUDA Toolkit packages: $($components -join ', ')"
+	$argumentList += $components
+}
+
 Write-Host "Installer arguments: $($argumentList -join ' ')"
 $process = Start-Process -FilePath (Resolve-Path $installer) -ArgumentList $argumentList -PassThru
 $timeout = [TimeSpan]::FromMinutes(20)
