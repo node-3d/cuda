@@ -24,17 +24,7 @@ Write-Host "Downloading CUDA $Version from $url"
 Invoke-WebRequest -Uri $url -OutFile $installer
 
 Write-Host "Installing CUDA $Version"
-$components = @(
-	"crt_$Version",
-	"cudart_$Version",
-	"nvcc_$Version",
-	"nvrtc_$Version",
-	"nvrtc_dev_$Version",
-	"nvvm_$Version",
-	"thrust_$Version"
-)
-$arguments = @("-s") + $components
-$process = Start-Process -FilePath (Resolve-Path $installer) -ArgumentList $arguments -Wait -PassThru
+$process = Start-Process -FilePath (Resolve-Path $installer) -ArgumentList "-s" -Wait -PassThru
 
 if ($process.ExitCode -ne 0) {
 	throw "CUDA installer failed with exit code $($process.ExitCode)"

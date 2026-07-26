@@ -42,6 +42,10 @@ jobs:
             os: macos-26
             node_arch: arm64
             native_build: false
+          - target: darwin-x64
+            os: macos-26
+            node_arch: x64
+            native_build: false
 
     runs-on: ${{ matrix.os }}
 
@@ -65,7 +69,7 @@ jobs:
           node -p "'node=' + process.version + ' platform=' + process.platform + ' arch=' + process.arch"
 
       - name: Install Modules
-        run: npm ci --ignore-scripts
+        run: npm ci
 
       - name: Install CUDA Toolkit - Windows
         if: ${{ matrix.native_build && startsWith(matrix.target, 'windows') }}

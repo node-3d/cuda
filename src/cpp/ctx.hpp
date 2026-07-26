@@ -9,7 +9,6 @@
 #include <cuda.h>
 
 // #define WGL_NV_gpu_affinity
-#include <cudagl.h>
 #include <cuda_gl_interop.h>
 // #undef WGL_NV_gpu_affinity
 
