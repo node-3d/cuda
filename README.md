@@ -22,6 +22,25 @@ x64 and Linux builds target CUDA 12.9. Windows ARM64 builds target CUDA 13.4
 because NVIDIA introduced Windows ARM64 target support there. CUDA toolkit/runtime
 and an NVIDIA driver are still required on the host system.
 
+## Platform Notes
+
+CUDA does not work on macOS. NVIDIA does not ship a current macOS CUDA runtime, so
+there is no macOS addon binary and CUDA calls are not expected to succeed there.
+
+The package can still be installed and imported on macOS for cross-platform codebases
+that share one module graph across Windows, Linux, and macOS. On macOS, basic import and
+device-count queries are safe, but CUDA operations throw a clear unsupported-platform
+error. Branch before constructing CUDA objects or allocating memory:
+
+```ts
+import { getDeviceCount, Device } from '@node-3d/cuda';
+
+if (getDeviceCount() > 0) {
+	const device = new Device(0);
+	console.log(device.name);
+}
+```
+
 * `Device`, `Ctx`, `Modulex`, `Function`, and `Mem` native wrappers.
 * Memory helpers such as `memAlloc`, `memAllocPitch`, and `memVBO`.
 * Module loading and runtime compilation helpers.

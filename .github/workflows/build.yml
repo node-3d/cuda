@@ -100,19 +100,20 @@ jobs:
           node -p "'node=' + process.version + ' platform=' + process.platform + ' arch=' + process.arch"
           npm config get arch
 
-      - name: Install CUDA Toolkit
-        uses: mjun0812/setup-cuda@v1
-        with:
-          version: ${{ matrix.cuda_version }}
-          method: auto
+      - name: Install CUDA Toolkit - Windows
+        if: ${{ startsWith(matrix.target, 'windows') }}
+        shell: pwsh
+        run: .github/scripts/install-cuda.ps1 -Version '${{ matrix.cuda_version }}'
+
+      - name: Install CUDA Toolkit - Linux
+        if: ${{ startsWith(matrix.target, 'linux') }}
+        run: bash .github/scripts/install-cuda.sh '${{ matrix.cuda_version }}'
 
       - name: Install Modules
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Build Current Binary
         run: npm run build:rebuild
-        env:
-          npm_config_arch: ${{ matrix.node_arch }}
 
       - name: Get Package Version
         id: package-version

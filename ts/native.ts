@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module';
+import { platform } from 'node:os';
 import { getBin } from '@node-3d/addon-tools';
 import '@node-3d/segfault';
 
@@ -126,4 +127,40 @@ type TNative = Readonly<{
 
 const loadAddon = createRequire(import.meta.url);
 
-export const native = loadAddon(`../${getBin()}/cuda.node`) as TNative;
+const unsupported = (): never => {
+	throw new Error(
+		'CUDA is not supported on macOS. NVIDIA does not provide a macOS CUDA runtime.',
+	);
+};
+
+const UnsupportedCudaObject = function UnsupportedCudaObject() {
+	unsupported();
+};
+
+const unsupportedNative: TNative = {
+	driverVersion: 0,
+	deviceCount: 0,
+	glDeviceCount: 0,
+	Ctx: UnsupportedCudaObject as unknown as TCudaCtxConstructor,
+	Device: UnsupportedCudaObject as unknown as TCudaDeviceConstructor,
+	Function: UnsupportedCudaObject as unknown as TCudaFunctionConstructor,
+	Mem: UnsupportedCudaObject as unknown as TCudaMemConstructor,
+	Modulex: UnsupportedCudaObject as unknown as TCudaModuleConstructor,
+	memVBO: unsupported,
+	memAlloc: unsupported,
+	memAllocPitch: unsupported,
+	thrust_inclusiveScan: unsupported,
+	thrust_reduce_floatSum: unsupported,
+	thrust_reduce_floatMax: unsupported,
+	thrust_reduce_floatMin: unsupported,
+	thrust_floatSort_int: unsupported,
+	thrust_remove_int: unsupported,
+	moduleLoad: unsupported,
+	moduleLoadData: unsupported,
+	moduleRuntimeCompile: unsupported,
+};
+
+export const native =
+	platform() === 'darwin'
+		? unsupportedNative
+		: (loadAddon(`../${getBin()}/cuda.node`) as TNative);

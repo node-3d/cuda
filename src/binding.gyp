@@ -3,7 +3,7 @@
 		'bin'        : '<!(node -e "import(\'@node-3d/addon-tools\').then((m) => m.printBin())")',
 		'gl_include' : '<!(node -p "require(\'@node-3d/deps-opengl\').include")',
 		'gl_bin'     : '<!(node -p "require(\'@node-3d/deps-opengl\').bin")',
-		'cuda_path'  : '<!(node -e "const { dirname, resolve } = require(\'node:path\'); const { execFileSync } = require(\'node:child_process\'); const nvcc = process.platform === \'win32\' ? \'where\' : \'which\'; const envPath = process.env.CUDA_PATH || process.env.CUDA_HOME; const nvccPath = envPath ? null : execFileSync(nvcc, [\'nvcc\'], { encoding: \'utf8\' }).split(/\\r?\\n/)[0]; console.log((envPath || resolve(dirname(nvccPath), \'..\')).replace(/\\\\/g, \'/\'));")',
+		'cuda_path'  : '<!(node cuda-path.js)',
 	},
 	'conditions': [[
 		'OS=="win"',
@@ -41,12 +41,12 @@
 					['OS=="win"', {
 						'rule_name': 'cuda-windows',
 						'process_outputs_as_sources': 0,
-						'action': ['node', 'build-cuda.js', '<(_inputs)', '<(_outputs)'],
+						'action': ['node', 'build-cuda.js', '<(_inputs)', '<(_outputs)', '<(target_arch)'],
 					}],
 					['OS!="win"', {
 						'rule_name': 'cuda-unix',
 						'process_outputs_as_sources': 1,
-						'action': ['node', 'build-cuda.js', '<(_inputs)', '<(_outputs)'],
+						'action': ['node', 'build-cuda.js', '<(_inputs)', '<(_outputs)', '<(target_arch)'],
 					}],
 				]
 			}],

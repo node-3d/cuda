@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 
 const scriptDir = import.meta.dirname;
 const isWindows = process.platform === 'win32';
-const [inputRaw, outputRaw] = process.argv.slice(2);
+const [inputRaw, outputRaw, targetArchRaw] = process.argv.slice(2);
 
 if (!inputRaw || !outputRaw) {
 	throw new Error('Usage: node build-cuda.js <input.cu> <output.obj>');
@@ -48,9 +48,14 @@ const normalizeOutput = (value) => {
 
 const input = normalizeInput(inputRaw);
 const output = normalizeOutput(outputRaw);
+// oxlint-disable node/no-process-env
+const targetArch =
+	targetArchRaw || process.env.npm_config_arch || process.env.npm_config_target_arch || process.arch;
+// oxlint-enable node/no-process-env
 const compilerOptions = isWindows
 	? ['/MD', '/Zc:preprocessor', '/D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH']
 	: ['-fPIC'];
+const targetOptions = isWindows && targetArch === 'arm64' ? ['--target-directory=arm64'] : [];
 
 mkdirSync(dirname(output), { recursive: true });
 
@@ -62,6 +67,7 @@ const args = [
 	'--machine=64',
 	'--gpu-architecture=compute_75',
 	'--allow-unsupported-compiler',
+	...targetOptions,
 	`--compiler-options=${compilerOptions.join(',')}`,
 	'-c',
 	input,

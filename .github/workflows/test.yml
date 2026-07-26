@@ -13,10 +13,35 @@ on:
 
 jobs:
   unit-tests:
-    name: Unit Tests
+    name: Unit Tests (${{ matrix.target }})
     strategy:
-        matrix:
-          os: [ubuntu-22.04, ubuntu-22.04-arm, windows-2022, macos-26]
+      fail-fast: false
+      matrix:
+        include:
+          - target: windows-x64
+            os: windows-2022
+            node_arch: x64
+            cuda_version: '12.9'
+            native_build: true
+          - target: windows-arm64
+            os: windows-11-arm
+            node_arch: arm64
+            cuda_version: '13.4'
+            native_build: true
+          - target: linux-x64
+            os: ubuntu-22.04
+            node_arch: x64
+            cuda_version: '12.9'
+            native_build: true
+          - target: linux-arm64
+            os: ubuntu-22.04-arm
+            node_arch: arm64
+            cuda_version: '12.9'
+            native_build: true
+          - target: darwin-arm64
+            os: macos-26
+            node_arch: arm64
+            native_build: false
 
     runs-on: ${{ matrix.os }}
 
@@ -31,13 +56,36 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24.13.0
+          architecture: ${{ matrix.node_arch }}
           cache: 'npm'
+
+      - name: Print Native Target
+        run: |
+          echo "runner=$(uname -s)-$(uname -m)"
+          node -p "'node=' + process.version + ' platform=' + process.platform + ' arch=' + process.arch"
 
       - name: Install Modules
         run: npm ci --ignore-scripts
 
+      - name: Install CUDA Toolkit - Windows
+        if: ${{ matrix.native_build && startsWith(matrix.target, 'windows') }}
+        shell: pwsh
+        run: .github/scripts/install-cuda.ps1 -Version '${{ matrix.cuda_version }}'
+
+      - name: Install CUDA Toolkit - Linux
+        if: ${{ matrix.native_build && startsWith(matrix.target, 'linux') }}
+        run: bash .github/scripts/install-cuda.sh '${{ matrix.cuda_version }}'
+
       - name: Build Package
         run: npm run build:ci
 
+      - name: Build Current Binary
+        if: ${{ matrix.native_build }}
+        run: npm run build:rebuild
+
       - name: Run Portable Unit Tests
         run: node --test "ts/arguments.test.ts"
+
+      - name: Run Export Tests
+        if: ${{ !matrix.native_build }}
+        run: node --test "ts/exports.test.ts"

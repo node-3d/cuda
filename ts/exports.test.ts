@@ -1,8 +1,20 @@
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
 
-const isNativeRuntimeError = (error: unknown): boolean =>
-	error instanceof Error && 'code' in error && error.code === 'ERR_DLOPEN_FAILED';
+const isNativeRuntimeError = (error: unknown): boolean => {
+	if (!(error instanceof Error) || !('code' in error)) {
+		return false;
+	}
+
+	if (error.code === 'ERR_DLOPEN_FAILED') {
+		return true;
+	}
+
+	return (
+		error.code === 'MODULE_NOT_FOUND' &&
+		(error.message.includes('cuda.node') || error.message.includes('segfault.node'))
+	);
+};
 
 describe('CUDA Exported API', () => {
 	it('loads the native API when the CUDA runtime is available', async (t) => {
