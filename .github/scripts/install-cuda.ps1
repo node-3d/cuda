@@ -19,34 +19,73 @@ if ($Version -eq "12.9") {
 
 $cudaPath = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v$Version"
 $installer = "cuda-$Version-$arch.exe"
-$logPath = Resolve-Path "."
-$logFile = Join-Path $logPath "cuda-install-$Version-$arch.log"
+$logDir = Join-Path (Resolve-Path ".") "cuda-install-$Version-$arch"
+
+function Show-InstallerLogs {
+	param(
+		[Parameter(Mandatory = $true)]
+		[string] $Path,
+		[int] $Tail = 80
+	)
+
+	if (!(Test-Path $Path)) {
+		Write-Host "CUDA installer log path does not exist yet: $Path"
+		return
+	}
+
+	$item = Get-Item $Path
+	if (!$item.PSIsContainer) {
+		Write-Host "CUDA installer log: $Path"
+		Get-Content $Path -Tail $Tail
+		return
+	}
+
+	$logs = Get-ChildItem $Path -File -Recurse | Sort-Object LastWriteTime -Descending
+	if (!$logs) {
+		Write-Host "CUDA installer log directory is empty: $Path"
+		return
+	}
+
+	foreach ($log in ($logs | Select-Object -First 3)) {
+		Write-Host "CUDA installer log: $($log.FullName)"
+		Get-Content $log.FullName -Tail $Tail
+	}
+}
 
 Write-Host "Downloading CUDA $Version from $url"
 Invoke-WebRequest -Uri $url -OutFile $installer
 $installerInfo = Get-Item $installer
 Write-Host "Downloaded $($installerInfo.FullName) ($($installerInfo.Length) bytes)"
 
+if (Test-Path $logDir) {
+	Remove-Item $logDir -Recurse -Force
+}
+New-Item -ItemType Directory -Path $logDir | Out-Null
+
 Write-Host "Installing CUDA $Version"
-$argumentList = @("-s", "-loglevel:6", "-log:$logFile")
+$argumentList = @("-s", "-loglevel:6", "-log:$logDir")
 Write-Host "Installer arguments: $($argumentList -join ' ')"
 $process = Start-Process -FilePath (Resolve-Path $installer) -ArgumentList $argumentList -PassThru
-$timeout = [TimeSpan]::FromMinutes(25)
+$timeout = [TimeSpan]::FromMinutes(20)
+$start = Get-Date
 
-if (!$process.WaitForExit([int] $timeout.TotalMilliseconds)) {
-	Write-Host "CUDA installer timed out after $($timeout.TotalMinutes) minutes."
-	if (Test-Path $logFile) {
-		Write-Host "Last CUDA installer log lines:"
-		Get-Content $logFile -Tail 200
+while (!$process.WaitForExit(60000)) {
+	$elapsed = (Get-Date) - $start
+	Write-Host "CUDA installer is still running after $([int] $elapsed.TotalMinutes) minutes."
+	Show-InstallerLogs -Path $logDir -Tail 25
+
+	if ($elapsed -ge $timeout) {
+		Write-Host "CUDA installer timed out after $($timeout.TotalMinutes) minutes."
+		Show-InstallerLogs -Path $logDir -Tail 200
+		Stop-Process -Id $process.Id -Force
+		throw "CUDA installer timed out"
 	}
-	Stop-Process -Id $process.Id -Force
-	throw "CUDA installer timed out"
 }
 
-if (Test-Path $logFile) {
-	Write-Host "Last CUDA installer log lines:"
-	Get-Content $logFile -Tail 120
-}
+$elapsed = (Get-Date) - $start
+Write-Host "CUDA installer exited after $([int] $elapsed.TotalMinutes) minutes with code $($process.ExitCode)."
+
+Show-InstallerLogs -Path $logDir -Tail 120
 
 if ($process.ExitCode -ne 0) {
 	throw "CUDA installer failed with exit code $($process.ExitCode)"

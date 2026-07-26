@@ -4,7 +4,9 @@
 
 #include <GL/glew.h>
 
+#ifdef _WIN32
 #include <GL/wglext.h>
+#endif
 
 #include <cuda_gl_interop.h>
 #include <cuda_runtime_api.h>
