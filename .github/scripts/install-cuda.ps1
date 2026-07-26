@@ -33,7 +33,6 @@ function Get-CudaComponents {
 			"nvcc_12.9",
 			"nvrtc_12.9",
 			"nvrtc_dev_12.9",
-			"nvvm_12.9",
 			"thrust_12.9"
 		)
 	}
