@@ -41,6 +41,13 @@ if (getDeviceCount() > 0) {
 }
 ```
 
+## CUDA Toolkit In CI
+
+CI jobs install CUDA with explicit installer control instead of relying on
+third-party setup actions. The workflows install only the components needed for
+addon builds, skip Nsight tools, and use installer progress logging plus
+timeouts so a CUDA installer cannot hang indefinitely.
+
 * `Device`, `Ctx`, `Modulex`, `Function`, and `Mem` native wrappers.
 * Memory helpers such as `memAlloc`, `memAllocPitch`, and `memVBO`.
 * Module loading and runtime compilation helpers.
