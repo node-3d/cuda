@@ -49,8 +49,7 @@ const normalizeOutput = (value) => {
 const input = normalizeInput(inputRaw);
 const output = normalizeOutput(outputRaw);
 // oxlint-disable node/no-process-env
-const targetArch =
-	targetArchRaw || process.env.npm_config_arch || process.env.npm_config_target_arch || process.arch;
+const targetArch = targetArchRaw || process.arch;
 // oxlint-enable node/no-process-env
 const compilerOptions = isWindows
 	? ['/MD', '/Zc:preprocessor', '/D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH']
