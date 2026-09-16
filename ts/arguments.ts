@@ -52,62 +52,56 @@ const getArgumentValue = (argument: TKernelArgument, index: number): number => {
 
 const writeArgument = (
 	buffer: Buffer,
-	type: TKernelValueType,
+	valueType: TKernelValueType,
 	value: number,
 	offset: number,
 ): void => {
-	switch (type) {
-		case 'Uint8': {
+	switch (valueType) {
+		case 'Uint8':
 			buffer.writeUInt8(value, offset);
 			break;
-		}
-		case 'Uint16': {
+		case 'Uint16':
 			buffer.writeUInt16LE(value, offset);
 			break;
-		}
-		case 'Uint32': {
+		case 'Uint32':
 			buffer.writeUInt32LE(value, offset);
 			break;
-		}
-		case 'Int8': {
+		case 'Int8':
 			buffer.writeInt8(value, offset);
 			break;
-		}
-		case 'Int16': {
+		case 'Int16':
 			buffer.writeInt16LE(value, offset);
 			break;
-		}
-		case 'Int32': {
+		case 'Int32':
 			buffer.writeInt32LE(value, offset);
 			break;
-		}
-		case 'Float32': {
+		case 'Float32':
 			buffer.writeFloatLE(value, offset);
 			break;
-		}
-		case 'Float64': {
+		case 'Float64':
 			buffer.writeDoubleLE(value, offset);
 			break;
-		}
-		case 'DevicePtr': {
+		case 'DevicePtr':
 			buffer.writeBigUInt64LE(BigInt(value), offset);
 			break;
-		}
-		default: {
-			throw new TypeError(`Unsupported CUDA kernel argument type: ${type}`);
-		}
+		default:
+			valueType satisfies never;
+			throw new TypeError(
+				`Unsupported CUDA kernel argument valueType: ${valueType as string}`,
+			);
 	}
 };
 
-export const prepareArguments = (
-	args: readonly TKernelArgument[] | Readonly<Record<string, TKernelArgument>>,
-): Buffer => {
-	const entries = Array.isArray(args) ? args : Object.values(args);
+export const prepareArguments = (args: readonly TKernelArgument[]): Buffer => {
 	let paramBufferSize = 0;
 
-	for (const argument of entries) {
+	for (const argument of args) {
 		const types = getArgumentTypes(argument);
-		paramBufferSize = alignUp(paramBufferSize, typeAlignment[types[0]] * types.length);
+		const valType = types[0];
+		if (!valType) {
+			continue;
+		}
+		paramBufferSize = alignUp(paramBufferSize, typeAlignment[valType] * types.length);
 
 		for (const type of types) {
 			paramBufferSize += typeByteSize[type];
@@ -117,9 +111,13 @@ export const prepareArguments = (
 	const paramBuffer = Buffer.alloc(paramBufferSize);
 	let offset = 0;
 
-	for (const argument of entries) {
+	for (const argument of args) {
 		const types = getArgumentTypes(argument);
-		offset = alignUp(offset, typeAlignment[types[0]] * types.length);
+		const valType = types[0];
+		if (!valType) {
+			continue;
+		}
+		offset = alignUp(offset, typeAlignment[valType] * types.length);
 
 		for (const [index, type] of types.entries()) {
 			writeArgument(paramBuffer, type, getArgumentValue(argument, index), offset);
@@ -134,5 +132,5 @@ export const launch = (
 	func: TCudaFunction,
 	gridDim: TDim3,
 	blockDim: TDim3,
-	args: readonly TKernelArgument[] | Readonly<Record<string, TKernelArgument>>,
+	args: readonly TKernelArgument[],
 ): number => func.launchKernel(gridDim, blockDim, prepareArguments(args));

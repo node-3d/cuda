@@ -77,7 +77,7 @@ if (syncError !== 0 || copyCError !== 0) {
 }
 
 for (let i = 0; i < count; i++) {
-	if (arrayC[i] !== arrayA[i] + arrayB[i]) {
+	if (arrayC[i] !== (arrayA[i] ?? 0) + (arrayB[i] ?? 0)) {
 		throw new Error(`Unexpected result at ${i}: ${arrayC[i]}`);
 	}
 }
