@@ -58,14 +58,14 @@ void Mem::init(Napi::Env env, Napi::Object exports) {
 
 	exports.DefineProperties(
 	    { SF(memVBO),
-	      SF(memAlloc),
-	      SF(memAllocPitch),
-	      SF(thrust_inclusiveScan),
-	      SF(thrust_reduce_floatSum),
-	      SF(thrust_reduce_floatMax),
-	      SF(thrust_reduce_floatMin),
-	      SF(thrust_floatSort_int),
-	      SF(thrust_remove_int) }
+		  SF(memAlloc),
+		  SF(memAllocPitch),
+		  SF(thrust_inclusiveScan),
+		  SF(thrust_reduce_floatSum),
+		  SF(thrust_reduce_floatMax),
+		  SF(thrust_reduce_floatMin),
+		  SF(thrust_floatSort_int),
+		  SF(thrust_remove_int) }
 	);
 
 	JS_ASSIGN_METHOD(free);
