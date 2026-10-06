@@ -12,12 +12,27 @@ on:
       - master
 
 jobs:
+  package:
+    name: Pack npm Candidate
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.13.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Store npm Candidate
+        uses: node-3d/addon-tools/actions/npm-candidate-upload@1073c0a6403f6c20df2135f03950a568e865aa16
+
   unit-tests:
     name: Unit Tests (${{ matrix.target }})
     timeout-minutes: 60
     strategy:
       fail-fast: false
-      matrix:
+      matrix: &native-matrix
         include:
           - target: windows-x64
             os: windows-2022
@@ -96,3 +111,43 @@ jobs:
       - name: Run Export Tests
         if: ${{ !matrix.native_build }}
         run: node --test "ts/exports.test.ts"
+      - name: Store Native Candidate
+        if: ${{ matrix.native_build }}
+        uses: node-3d/addon-tools/actions/native-candidate-upload@1073c0a6403f6c20df2135f03950a568e865aa16
+        with:
+          artifact-name: native-${{ matrix.target }}
+
+  consumer-tests:
+    name: Packed Consumer (${{ matrix.target }})
+    needs: [package, unit-tests]
+    strategy:
+      fail-fast: false
+      matrix: *native-matrix
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.13.0
+          architecture: ${{ matrix.node_arch }}
+      - name: Install CUDA Toolkit - Windows
+        if: ${{ matrix.native_build && startsWith(matrix.target, 'windows') }}
+        shell: pwsh
+        timeout-minutes: 30
+        run: .github/scripts/install-cuda.ps1 -Version '${{ matrix.cuda_version }}'
+      - name: Install CUDA Toolkit - Linux
+        if: ${{ matrix.native_build && startsWith(matrix.target, 'linux') }}
+        timeout-minutes: 30
+        run: bash .github/scripts/install-cuda.sh '${{ matrix.cuda_version }}'
+      - name: Install Packed Consumer Candidate
+        id: consumer
+        uses: node-3d/addon-tools/actions/consumer-install@1073c0a6403f6c20df2135f03950a568e865aa16
+        with:
+          package-name: '@node-3d/cuda'
+          binary-artifact: ${{ matrix.native_build && format('native-{0}', matrix.target) || '' }}
+          fixture: test-consumer
+      - name: Run Packed Consumer Tests
+        working-directory: ${{ steps.consumer.outputs.directory }}
+        run: npm test
